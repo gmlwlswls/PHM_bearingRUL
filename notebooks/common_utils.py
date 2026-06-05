@@ -2,12 +2,26 @@ import numpy as np
 import pandas as pd
 import os
 import glob
+import random
+import torch
 import matplotlib.pyplot as plt
 
 TRAIN_PATH = '../data/Train'
 TEST_PATH  = '../data/Test'
 META_COLS  = ['epoch', 'window', 't_abs', 'rpm_pred',
               'ttf', 'RUL', 'life_pct', 'rpm']
+SEED       = 42
+
+
+# ── 시드 고정 ─────────────────────────────────────────────────
+def fix_seed(seed=SEED):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark     = False
+    os.environ['PYTHONHASHSEED'] = str(seed)
 
 
 # ── 스코어 함수 ───────────────────────────────────────────────
@@ -25,12 +39,17 @@ calc_score_vec = np.vectorize(calc_score)
 def load_train_data():
     dfs = []
     for t in [1, 2, 3, 4]:
-        path = os.path.join(
-            TRAIN_PATH,
-            f'Train{t}_Vibration_featured_summary.csv'
-        )
+        path = os.path.join(TRAIN_PATH,
+               f'Train{t}_Vibration_featured_summary.csv')
         df = pd.read_csv(path)
         df['train_id'] = t
+
+        # 시간 관련 컬럼은 float64 유지, 나머지 피처는 float32
+        time_cols  = ['t_abs', 'ttf', 'RUL', 'life_pct']
+        float_cols = [c for c in df.select_dtypes('float64').columns
+                      if c not in time_cols]
+        df[float_cols] = df[float_cols].astype(np.float32)
+
         dfs.append(df)
     return pd.concat(dfs, ignore_index=True)
 
@@ -52,6 +71,13 @@ def load_test_data():
             continue
         df = pd.read_csv(path)
         df['test_id'] = t
+
+        # 시간 관련 컬럼은 float64 유지, 나머지 피처는 float32
+        time_cols  = ['t_abs']  # Test는 ttf, RUL, life_pct 없음
+        float_cols = [c for c in df.select_dtypes('float64').columns
+                      if c not in time_cols]
+        df[float_cols] = df[float_cols].astype(np.float32)
+
         dfs.append(df)
     return pd.concat(dfs, ignore_index=True) if dfs else None
 
@@ -64,37 +90,43 @@ def get_feat_cols(df):
 
 # ── 트렌드 피처 추가 ──────────────────────────────────────────
 def add_trend_features(df, windows=[5, 10], group_col='train_id'):
-    df = df.copy()
     sort_cols = [group_col, 'epoch', 'window'] \
                 if 'window' in df.columns \
                 else [group_col, 'epoch']
     df = df.sort_values(sort_cols).reset_index(drop=True)
 
     feat_cols = get_feat_cols(df)
+
+    # 트렌드 피처 미리 계산 후 concat으로 한번에 추가
+    new_cols = {}
     for col in feat_cols:
         for w in windows:
-            df[f'{col}_rmean{w}'] = (
+            new_cols[f'{col}_rmean{w}'] = (
                 df.groupby(group_col)[col]
                 .transform(lambda x: x.rolling(w, min_periods=1).mean())
             )
-            df[f'{col}_slope{w}'] = (
+            new_cols[f'{col}_slope{w}'] = (
                 df.groupby(group_col)[col]
                 .transform(lambda x: x.diff(w) / w)
                 .fillna(0)
             )
+
+    df = pd.concat([df, pd.DataFrame(new_cols, index=df.index)], axis=1)
     return df
 
 
 # ── epoch 단위 집계 ───────────────────────────────────────────
 def aggregate_epoch(df):
-    feat_cols  = get_feat_cols(df)
-    agg_dict   = {c: 'median' for c in feat_cols}
-    agg_dict['t_abs'] = 'median'
+    feat_cols = get_feat_cols(df)
+    agg_dict  = {c: 'median' for c in feat_cols}
+    agg_dict['t_abs'] = 'max'
 
     if 'RUL' in df.columns:
-        agg_dict['RUL'] = 'median'
+        agg_dict['RUL'] = 'min'
     if 'life_pct' in df.columns:
-        agg_dict['life_pct'] = 'median'
+        agg_dict['life_pct'] = 'max'
+    if 'ttf' in df.columns:
+        agg_dict['ttf'] = 'first'   # ← 추가: ttf는 상수값이라 first로
 
     group_cols = ['train_id', 'epoch'] \
                  if 'train_id' in df.columns \

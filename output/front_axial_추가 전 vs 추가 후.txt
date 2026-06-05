@@ -1,0 +1,31 @@
+기존 성능
+피처 수: 191개
+Train 샘플: 24개 | Valid 샘플: 12개
+학습 완료
+
+=== Model G: 1초 XGBoost + TTF + sample_weight ===
+  cutoff=20% | Score=0.9931 | MAE=135s
+  cutoff=50% | Score=0.9442 | MAE=713s
+  cutoff=80% | Score=0.6977 | MAE=2088s
+
+  전체 평균 Score: 0.8783
+  Model G (XGBoost+TTF+weight):  LOO=0.4365
+
+피처 수: 201개(ch2_spectral_centroid 추가 후 - front_axial)
+Train 샘플: 24개 | Valid 샘플: 12개
+학습 완료
+
+=== Model G: 1초 XGBoost + TTF + sample_weight ===
+  cutoff=20% | Score=0.9897 | MAE=275s
+  cutoff=50% | Score=0.9480 | MAE=691s
+  cutoff=80% | Score=0.6966 | MAE=2265s
+
+  전체 평균 Score: 0.8781
+
+=== LOO 기반 최종 모델 비교 ===
+  Model G (XGBoost+TTF+weight):  LOO=0.4411
+  Model E (LSTM+TTF):            LOO=0.4284 (과적합)
+  → 평균 Score: 0.1151(Train3)
+  → 평균 Score: 0.1168(Train3)
+
+

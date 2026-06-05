@@ -1,0 +1,38 @@
+=== front_axial 피처 추가 ===
+Train 1 | front_axial_top10=3176.7 | front_axial_std=688.5
+Train 2 | front_axial_top10=3737.7 | front_axial_std=653.3
+Train 3 | front_axial_top10=6881.6 | front_axial_std=1994.5
+Train 4 | front_axial_top10=4436.8 | front_axial_std=973.9
+
+
+피처 수: 201개
+Train 샘플: 24개 | Valid 샘플: 12개
+학습 완료
+
+=== Model G: 1초 XGBoost + TTF + sample_weight ===
+  cutoff=20% | Score=0.9897 | MAE=275s
+  cutoff=50% | Score=0.9480 | MAE=691s
+  cutoff=80% | Score=0.6966 | MAE=2265s
+
+  전체 평균 Score: 0.8781
+
+--- Val=Train1 | 학습=Train[2, 3, 4] ---   → 평균 Score: 0.4477
+--- Val=Train2 | 학습=Train[1, 3, 4] ---  → 평균 Score: 0.5695
+--- Val=Train3 | 학습=Train[1, 2, 4] ---  → 평균 Score: 0.1168 (1151이었으니까 올라가긴 함..)
+--- Val=Train4 | 학습=Train[1, 2, 3] ---  → 평균 Score: 0.6118
+=== Model G LOO 평균 Score: 0.4365 ===
+
+피처 수: 206개 + top10으로 변환
+Train 샘플: 24개 | Valid 샘플: 12개
+학습 완료
+=== Model G: 1초 XGBoost + TTF + sample_weight ===
+  cutoff=20% | Score=0.9823 | MAE=362s
+  cutoff=50% | Score=0.9319 | MAE=783s
+  cutoff=80% | Score=0.6510 | MAE=2549s
+
+--- Val=Train1 | 학습=Train[2, 3, 4] ---  → 평균 Score: 0.4413
+--- Val=Train2 | 학습=Train[1, 3, 4] ---  → 평균 Score: 0.5640
+--- Val=Train3 | 학습=Train[1, 2, 4] ---   → 평균 Score: 0.5953
+=== Model G LOO 평균 Score: 0.4282 ===
+
+
