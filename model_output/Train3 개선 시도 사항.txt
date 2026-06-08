@@ -1,0 +1,46 @@
+Train3 시도 사항
+
+기존)
+전체 평균 score = 0.8783
+Train3 score = 0.1168
+LOO 평균 = 0.4365
+
++sum_of_fault, front-rear-fault_ratio)
+전체 평균 score = 0.8524
+Train3 score = 0.1127
+LOO 평균 = 0.4280
+
++front axial top10, front_axial_std)
+전체 평균 score = 0.8551
+Train3 score = 0.1121
+LOO 평균 = 0.4282
+
+y타겟 변환) RUL/max(t_abs)
+전체 평균 score = 0.4896
+Train3 score = 0.4090
+LOO 평균 = 0.4137
+
+y타겟 변환) RUL/ttf
+RUL/TTF - 절댓값차이를 사라지게 하고, RUL 학습 당시 너무 큰 값이라 학습에 방해 보완
+전체 평균 score = 0.4862
+Train3 score = 0.4198
+LOO 평균 = 0.4013
+
+y타겟 변환) ln(RUL)
+전체 평균 score = 0.4583
+Train3 score = 0.2853
+LOO 평균 = 0.4267
+
+y타겟 변환) t_abs/ttf
+전체 평균 score = 0.3846
+Train3 score = 0.2355
+LOO 평균 = 0.2606
+
+y타겟 변환) RUL/t_abs
+전체 평균 score = 0.2600
+Train3 score = 0.2594
+LOO 평균 = 0.2485
+
+
+
+

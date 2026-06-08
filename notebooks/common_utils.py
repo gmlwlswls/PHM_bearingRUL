@@ -28,7 +28,7 @@ def fix_seed(seed=SEED):
 def calc_score(act_rul, pred_rul):
     er = 100 * (act_rul - pred_rul) / (act_rul + 1e-10)
     if er <= 0:
-        return float(np.exp(-np.log(0.5) * er / 20))
+        return float(np.exp(-np.log(0.5) * er / 30))
     else:
         return float(np.exp(np.log(0.5) * er / 50))
 
